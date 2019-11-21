@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '.herokuapp.com']
 
+# API_KEY = 'your-key-here'
+API_KEY = ''
 
 # Application definition
 
