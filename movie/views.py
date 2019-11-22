@@ -9,12 +9,12 @@ from movie.serializers import MovieSerializer
 class MovieFilterSet(filters.FilterSet):
     min_year = filters.NumberFilter(field_name='year', lookup_expr='gte')
     max_year = filters.NumberFilter(field_name='year', lookup_expr='lte')
-    genre = filters.CharFilter(lookup_expr='contains')
-    actor = filters.CharFilter(field_name='actors', lookup_expr='contains')
-    director = filters.CharFilter(lookup_expr='contains')
-    writer = filters.CharFilter(lookup_expr='contains')
-    language = filters.CharFilter(lookup_expr='contains')
-    country = filters.CharFilter(lookup_expr='contains')
+    genre = filters.CharFilter(lookup_expr='icontains')
+    actor = filters.CharFilter(field_name='actors', lookup_expr='icontains')
+    director = filters.CharFilter(lookup_expr='icontains')
+    writer = filters.CharFilter(lookup_expr='icontains')
+    language = filters.CharFilter(lookup_expr='icontains')
+    country = filters.CharFilter(lookup_expr='icontains')
     min_imdb_rating = filters.CharFilter(field_name='imdb_rating',
                                          lookup_expr='gte')
     max_imdb_rating = filters.CharFilter(field_name='imdb_rating',
