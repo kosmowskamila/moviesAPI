@@ -2,6 +2,11 @@ from django.db import models
 
 
 class Movie(models.Model):
+    """
+    Model storing single entry of movie. Contains all the data that can
+    be fetched from OMDB database, except for ratings, which have
+    separate model.
+    """
     title = models.CharField(max_length=50)
     year = models.IntegerField(blank=True, null=True)
     rated = models.CharField(max_length=5, blank=True, null=True)
@@ -28,6 +33,10 @@ class Movie(models.Model):
 
 
 class Rating(models.Model):
+    """
+    Model used for storing ratings fetched alongside with movie data.
+    Contains source of rating, value and movie foreign key.
+    """
     source = models.CharField(max_length=100)
     value = models.CharField(max_length=10)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='ratings')

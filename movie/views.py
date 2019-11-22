@@ -40,6 +40,11 @@ class MovieViewSet(viewsets.ModelViewSet):
 
 
 class TopMoviesViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    View returning info about the most commented movies in specified
+    date range. Parameters "start" and "end" are obligatory to receive
+    any data!
+    """
     queryset = Movie.objects.all()
     serializer_class = TopMoviesSerializer
 

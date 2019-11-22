@@ -32,6 +32,15 @@ class MovieSerializer(serializers.ModelSerializer):
                   'dvd', 'box_office', 'production', 'website', 'ratings']
 
     def create(self, validated_data):
+        """
+        Overriden create method. This is caused by the fact, that when
+        movie title is posted, we need to call external API to fill in
+        movie info.
+        There are a few checks: if movie even exists, if such movie is
+        already in database and if returned info is even about the movie.
+        :param validated_data: validated data used to create instances.
+        :return: movie instance (got or created)
+        """
         title = validated_data.get('title', None)
 
         try:
