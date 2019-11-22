@@ -23,36 +23,29 @@ class MovieSerializer(serializers.ModelSerializer):
                   'dvd', 'box_office', 'production', 'website', 'ratings']
 
     def create(self, validated_data):
-        client = OMDBClient(apikey=settings.API_KEY)
         title = validated_data.get('title', None)
-        if title:
-            fetched_data = client.get(title=title)
 
-            if not fetched_data:
-                raise serializers.ValidationError('Invalid title.')
+        try:
+            movie = Movie.objects.get(title=title)
+        except Movie.DoesNotExist:
+            if title:
+                client = OMDBClient(apikey=settings.API_KEY)
+                fetched_data = client.get(title=title)
 
-            if fetched_data['type'] != 'movie':
-                raise serializers.ValidationError('Only movies avaliable.')
+                if not fetched_data:
+                    raise serializers.ValidationError('Invalid title.')
 
-            fetched_data.pop('response')
-            ratings = fetched_data.pop('ratings')
+                if fetched_data['type'] != 'movie':
+                    raise serializers.ValidationError('Only movies avaliable.')
 
-            released = fetched_data.pop('released')
-            released_date = datetime.datetime.strptime(released, '%d %b %Y').date()
+                fetched_data.pop('response')
+                ratings = fetched_data.pop('ratings')
 
-            dvd = fetched_data.pop('dvd')
-            dvd_date = datetime.datetime.strptime(dvd, '%d %b %Y').date()
+                movie, created = Movie.objects.get_or_create(**fetched_data)
 
-            imdb_votes = fetched_data.pop('imdb_votes')
+                for rating in ratings:
+                    Rating.objects.create(**rating, movie=movie)
+            else:
+                raise serializers.ValidationError('Invalid request data!')
+        return movie
 
-            movie = Movie.objects.create(**fetched_data,
-                                         released=released_date,
-                                         dvd=dvd_date,
-                                         imdb_votes=imdb_votes.replace(',', ''))
-
-            for rating in ratings:
-                Rating.objects.create(**rating, movie=movie)
-
-            return movie
-        else:
-            raise serializers.ValidationError('Invalid request data!')
