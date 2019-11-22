@@ -2,7 +2,6 @@ from rest_framework import serializers
 from movie.models import Movie, Rating
 from omdb import OMDBClient
 from django.conf import settings
-import datetime
 
 
 class RatingSerializer(serializers.ModelSerializer):
