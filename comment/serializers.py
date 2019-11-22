@@ -4,5 +4,5 @@ from comment.models import Comment
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
-        queryset = Comment.objects.all()
-        fields = ['__all__']
+        model = Comment
+        fields = ['id', 'movie', 'created', 'body']
