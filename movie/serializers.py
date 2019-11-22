@@ -10,6 +10,16 @@ class RatingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class TopMoviesSerializer(serializers.ModelSerializer):
+    movie_id = serializers.IntegerField(source='id')
+    total_comments = serializers.IntegerField()
+    rank = serializers.IntegerField()
+
+    class Meta:
+        model = Movie
+        fields = ['movie_id', 'total_comments', 'rank']
+
+
 class MovieSerializer(serializers.ModelSerializer):
     ratings = RatingSerializer(many=True, read_only=True)
 

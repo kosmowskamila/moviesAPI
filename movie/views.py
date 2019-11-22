@@ -1,9 +1,12 @@
-from rest_framework import viewsets, generics
+from rest_framework import viewsets
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
+from django.db.models import F, Count
+from django.db.models.expressions import Window
+from django.db.models.functions import DenseRank
 
 from movie.models import Movie
-from movie.serializers import MovieSerializer
+from movie.serializers import MovieSerializer, TopMoviesSerializer
 
 
 class MovieFilterSet(filters.FilterSet):
@@ -35,5 +38,14 @@ class MovieViewSet(viewsets.ModelViewSet):
     filter_class = MovieFilterSet
 
 
-class TopMovies(generics.ListAPIView):
+class TopMoviesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Movie.objects.all()
+    serializer_class = TopMoviesSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.annotate(total_comments=Count('comments'), rank=Window(
+            expression=DenseRank(),
+            order_by=F('total_comments').desc(),
+        ))
+
