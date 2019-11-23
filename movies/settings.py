@@ -23,12 +23,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '(hz19vj_iye$&(670c*1h-zq3nzwr-w%d5%^(pjzoxg4r*y3r^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '.herokuapp.com']
 
 # API_KEY = 'your-key-here'
-API_KEY = ''
+API_KEY = 'a58a95d8'
 
 # Application definition
 
@@ -128,3 +128,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
