@@ -1,10 +1,11 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
+from rest_framework.response import Response
 from django.db.models import F, Q, Count
 from django.db.models.expressions import Window
 from django.db.models.functions import DenseRank
-from django.core.exceptions import ValidationError
+from datetime import datetime
 
 from movie.models import Movie
 from movie.serializers import MovieSerializer, TopMoviesSerializer
@@ -48,10 +49,20 @@ class TopMoviesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Movie.objects.all()
     serializer_class = TopMoviesSerializer
 
+    @staticmethod
+    def validate_date(date_string):
+        try:
+            datetime.strptime(date_string, '%Y-%m-%d')
+        except ValueError:
+            return False
+        return True
+
     def get_queryset(self):
         start = self.request.query_params.get('start', None)
         end = self.request.query_params.get('end', None)
         if start and end:
+            if not self.validate_date(start) or not self.validate_date(end):
+                return Response('Required date format: YYYY-MM-DD', status=status.HTTP_400_BAD_REQUEST)
             qs = super().get_queryset()
             return qs.annotate(
                 total_comments=Count('comments', filter=Q(
@@ -61,5 +72,4 @@ class TopMoviesViewSet(viewsets.ReadOnlyModelViewSet):
                             )
             )
         else:
-            raise ValidationError('Please, provide start and end dates.')
-
+            return Response('Please, provide start and end dates.', status=status.HTTP_400_BAD_REQUEST)
