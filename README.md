@@ -36,4 +36,4 @@ You can also:
 * `POST /movies`: important! _title_ field in body is obligatory! That method will fetch movie data from external API, save it to database and return it to you.
 * `GET /comments`: will return all comments attached to movies. There is only one way of filtering: `/comments?movie=1` will return only comments for the movie of _id_ 1.
 * `POST /comments`: with obligatory _movie_ and _body_ fields in the request body, will save comment to database and return it to user.
-* `GET /top?start=<start_date>&end=<end_date>`: is made for returning ranking of most commented movies in the specified date range. Both _start_ and _end_ parameters are required! 
+* `GET /top?start=<start_date>&end=<end_date>`: is made for returning ranking of most commented movies in the specified date range. Both _start_ and _end_ parameters are required! Also note that valid date format is `YYYY-MM-DD`.
