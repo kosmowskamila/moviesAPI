@@ -25,10 +25,9 @@ SECRET_KEY = '(hz19vj_iye$&(670c*1h-zq3nzwr-w%d5%^(pjzoxg4r*y3r^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '.herokuapp.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# API_KEY = 'your-key-here'
-API_KEY = 'a58a95d8'
+API_KEY = ''
 
 # Application definition
 
