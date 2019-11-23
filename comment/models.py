@@ -11,4 +11,4 @@ class Comment(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE,
                               related_name='comments')
     body = models.TextField()
-    created = models.DateTimeField(auto_now_add=True, editable=False)
+    created = models.DateTimeField(auto_now_add=True)
