@@ -1,13 +1,15 @@
+from datetime import datetime
+
 from rest_framework import viewsets
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from django.db.models import F, Q, Count
 from django.db.models.expressions import Window
 from django.db.models.functions import DenseRank
-from django.core.exceptions import ValidationError
 
 from movie.models import Movie
 from movie.serializers import MovieSerializer, TopMoviesSerializer
+from movie.exceptions import InvalidDateException, NoDateRangeException
 
 
 class MovieFilterSet(filters.FilterSet):
@@ -48,18 +50,29 @@ class TopMoviesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Movie.objects.all()
     serializer_class = TopMoviesSerializer
 
+    @staticmethod
+    def validate_date(date_string):
+        try:
+            datetime.strptime(date_string, '%Y-%m-%d')
+        except ValueError:
+            return False
+        return True
+
     def get_queryset(self):
         start = self.request.query_params.get('start', None)
         end = self.request.query_params.get('end', None)
-        if start and end:
-            qs = super().get_queryset()
-            return qs.annotate(
-                total_comments=Count('comments', filter=Q(
-                    comments__created__range=[start, end])),
-                rank=Window(expression=DenseRank(),
-                            order_by=F('total_comments').desc()
-                            )
-            )
-        else:
-            raise ValidationError('Please, provide start and end dates.')
+
+        if not start or not end:
+            raise NoDateRangeException
+
+        if not self.validate_date(start) or not self.validate_date(end):
+            raise InvalidDateException
+
+        qs = super().get_queryset()
+        return qs.annotate(total_comments=Count(
+            'comments', filter=Q(comments__created__range=[start, end])),
+            rank=Window(expression=DenseRank(),
+                        order_by=F('total_comments').desc())
+        )
+
 
