@@ -1,14 +1,15 @@
-from rest_framework import viewsets, status
+from datetime import datetime
+
+from rest_framework import viewsets
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
-from rest_framework.response import Response
 from django.db.models import F, Q, Count
 from django.db.models.expressions import Window
 from django.db.models.functions import DenseRank
-from datetime import datetime
 
 from movie.models import Movie
 from movie.serializers import MovieSerializer, TopMoviesSerializer
+from movie.exceptions import InvalidDateException, NoDateRangeException
 
 
 class MovieFilterSet(filters.FilterSet):
@@ -60,16 +61,18 @@ class TopMoviesViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         start = self.request.query_params.get('start', None)
         end = self.request.query_params.get('end', None)
-        if start and end:
-            if not self.validate_date(start) or not self.validate_date(end):
-                return Response('Required date format: YYYY-MM-DD', status=status.HTTP_400_BAD_REQUEST)
-            qs = super().get_queryset()
-            return qs.annotate(
-                total_comments=Count('comments', filter=Q(
-                    comments__created__range=[start, end])),
-                rank=Window(expression=DenseRank(),
-                            order_by=F('total_comments').desc()
-                            )
-            )
-        else:
-            return Response('Please, provide start and end dates.', status=status.HTTP_400_BAD_REQUEST)
+
+        if not start or not end:
+            raise NoDateRangeException
+
+        if not self.validate_date(start) or not self.validate_date(end):
+            raise InvalidDateException
+
+        qs = super().get_queryset()
+        return qs.annotate(
+            total_comments=Count('comments', filter=Q(
+                comments__created__range=[start, end])),
+            rank=Window(expression=DenseRank(),
+                        order_by=F('total_comments').desc()
+                        )
+        )
