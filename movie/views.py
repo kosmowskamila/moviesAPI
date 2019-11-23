@@ -9,7 +9,8 @@ from django.db.models.functions import DenseRank
 
 from movie.models import Movie
 from movie.serializers import MovieSerializer, TopMoviesSerializer
-from movie.exceptions import InvalidDateException, NoDateRangeException
+from movie.exceptions import InvalidDateException, NoDateRangeException,\
+    InvalidRangeException
 
 
 class MovieFilterSet(filters.FilterSet):
@@ -51,22 +52,35 @@ class TopMoviesViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TopMoviesSerializer
 
     @staticmethod
-    def validate_date(date_string):
+    def validate_dates(start_string, end_string):
+        """
+        Method for date range validation. Checking whether correct dates have
+        been submitted and if start date is smaller than end date.
+        :param start_string: start date provided by the user
+        :param end_string: end date provided by the user
+        :raise: InvalidRangeException or InvalidDateException
+        """
         try:
-            datetime.strptime(date_string, '%Y-%m-%d')
+            start = datetime.strptime(start_string, '%Y-%m-%d')
+            end = datetime.strptime(end_string, '%Y-%m-%d')
+            if start > end:
+                raise InvalidRangeException
         except ValueError:
-            return False
-        return True
+            raise InvalidDateException
 
     def get_queryset(self):
+        """
+        Overriden get_queryset function, for two purporses:
+        - validating date range
+        - applying total_comment and rank info to queryset.
+        :return:
+        """
         start = self.request.query_params.get('start', None)
         end = self.request.query_params.get('end', None)
 
         if not start or not end:
             raise NoDateRangeException
-
-        if not self.validate_date(start) or not self.validate_date(end):
-            raise InvalidDateException
+        self.validate_dates(start, end)
 
         qs = super().get_queryset()
         return qs.annotate(total_comments=Count(
