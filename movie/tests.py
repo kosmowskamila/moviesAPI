@@ -1,6 +1,5 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-from django.core.exceptions import ValidationError
 
 from movie.models import Movie, Rating
 from comment.models import Comment
@@ -276,24 +275,54 @@ class TopMoviesTests(APITestCase):
         Test for invalid request, that doesn't have date range specified.
         """
         url = '/top'
-        with self.assertRaises(ValidationError):
-            self.client.get(url)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_no_start_date(self):
         """
         Test for invalid request, that doesn't have start date specified.
         """
         url = '/top?end=2020-11-23'
-        with self.assertRaises(ValidationError):
-            self.client.get(url)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_no_end_date(self):
         """
         Test for invalid request, that doesn't have end date specified.
         """
         url = '/top?start=1999-11-23'
-        with self.assertRaises(ValidationError):
-            self.client.get(url)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_incorrect_date(self):
+        """
+        Test for invalid request, where incorrect date is provided.
+        """
+        url = '/top?start=1999-15-23&end=2020-11-23'
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_date_format(self):
+        """
+        Test for invalid date format.
+        """
+        url = '/top?start=1995/15/23&end=2020-11-23'
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_date_range(self):
+        """
+        Test for case where start date is bigger than end date.
+        """
+        url = '/top?start=2015-15-23&end=2010-11-23'
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_post(self):
         """
